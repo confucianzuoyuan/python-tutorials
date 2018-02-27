@@ -174,7 +174,7 @@ print(repr(serializer))
 - 一个自动决定的字段集合。
 - 简单的默认`create()`和`update()`方法的实现。
 ## 用我们的序列化来写常规的Django视图
-让我们看看，使用我们新的序列化类，我们怎么写一些API视图。此刻，我们不会使用REST框架的其他特性，仅仅像写常规Django视图一样。 通过创建`HttpResponse`的一个子类来开始，其中，我们可以用这个自雷来渲染任何我们返回的`json`数据。 编辑`snippets/views.py`文件，添加以下代码。
+让我们看看，使用我们新的序列化类，我们怎么写一些API视图。此刻，我们不会使用REST框架的其他特性，仅仅像写常规Django视图一样。 通过创建`HttpResponse`的一个子类来开始，其中，我们可以用这个子类来渲染任何我们返回的`json`数据。 编辑`snippets/views.py`文件，添加以下代码。
 ```
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
