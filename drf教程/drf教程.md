@@ -491,3 +491,134 @@ http --json POST http://127.0.0.1:8000/snippets/ code="print 456"
 
 ## 接下来要干什么？
 在教程的第三部分，我们基于视图用类，并且看看普通的视图我们如何减少代码。
+
+# 3, 基于视图的类(class based view)
+除了可以用基于视图的函数(function based view)写我们的API，我们也可以用基于视图的类。正如我们所见，这是一个非常有利的模式，允许我们重用同样的功能，并帮助我们使代码紧凑。
+## 用基于视图的类重写我们的API
+我们将会想重写一个基于视图的类一样重写根视图。这包括重构`views.py`文件。
+```
+from snippets.models import Snippet
+from snippets.serializers import SnippetSerializer
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+
+class SnippetList(APIView):
+    """
+    List all snippets, or create a new snippet.
+    """
+    def get(self, request, format=None):
+        snippets = Snippet.objects.all()
+        serializer = SnippetSerializer(snippets, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = SnippetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+```
+到目前为止，一切都很好。这和之前的情况很相似，但是我们已经很好地通过不同的HTTP方法区分。现在我们也需要在`views.py`中更新实例视图。
+```
+class SnippetDetail(APIView):
+    """
+    Retrieve, update or delete a snippet instance.
+    """
+    def get_object(self, pk):
+        try:
+            return Snippet.objects.get(pk=pk)
+        except Snippet.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        snippet = self.get_object(pk)
+        serializer = SnippetSerializer(snippet)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        snippet = self.get_object(pk)
+        serializer = SnippetSerializer(snippet, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        snippet = self.get_object(pk)
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+```
+那看起来不错。再次强调，这和基于视图的函数非常相似。 我们也需要用基于视图的类重构我们的`urls.py`。
+```
+from django.conf.urls import url
+from rest_framework.urlpatterns import format_suffix_patterns
+from snippets import views
+
+urlpatterns = [
+    url(r'^snippets/$', views.SnippetList.as_view()),
+    url(r'^snippets/(?P<pk>[0-9]+)/$', views.SnippetDetail.as_view()),
+]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
+```
+好了，我们做完了。如果你启用开发服务器，那么一切都和之前一样。
+## 使用混合(mixins)
+使用基于视图的类最大的一个好处是，它允许我们快速创建可复用的行为。我们一直使用的`create/retrieve/update/delete`操作将和我们创建的任何后端模型API视图非常相似。这些普遍的行为是通过REST框架的混合类`(mixin classes)`实现的。 让我们看看如何通过混合类`(mixin classes)`组建视图。下面是我们的`views.py`模型。
+```
+from snippets.models import Snippet
+from snippets.serializers import SnippetSerializer
+from rest_framework import mixins
+from rest_framework import generics
+
+class SnippetList(mixins.ListModelMixin,
+                  mixins.CreateModelMixin,
+                  generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+```
+我们会花一会儿准确测试这里发生了什么。我们使用`GenericAPIView`加上`ListMOdelMixin`和`CreatteModelMixin`创建我们的视图。 基类提供核心功能，混合类提供`.list()`和`.create()`动作。然后我们合适的动作绑定明确的`get`和`post`方法。到目前为止，东西已经足够简单。
+```
+class SnippetDetail(mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+```
+太像了。我们用`GenericAPIView`类提供核心功能，添加混合`(mixin)`，来提供`.retrieve()`，`.update()`和`.destroy()`动作。
+## 使用基于视图的一般类(generic class)
+尽管我们已经使用混合类(mixin classes)以比之前更少的代码重写了视图，但是我们可以进一步深入。REST框架提供一个已经混入一般视图的集合，我们能用他们来整理我们的`views.py`模块。
+```
+from snippets.models import Snippet
+from snippets.serializers import SnippetSerializer
+from rest_framework import generics
+
+
+class SnippetList(generics.ListCreateAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+
+
+class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+```
+哇，如此简洁。我们的代码看起来是如此简洁、地道的Django。 接下来我们要学习本教程的第四部分，在第四部分我们会为我们的API处理授权(authentication)和权限(permissions)。
