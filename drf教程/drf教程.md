@@ -799,3 +799,123 @@ http -a admin:password123 POST http://127.0.0.1:8000/snippets/ code="print 789"
 
 ## 总结
 现在我们已经在我们的Web API上，为我们的系统用户和snippet的创建者，添加了很多权限和端点。 在第五部分，我们将会看怎么我们可以通过为我们的高亮snippets创建HTML端点来将所有东西联系在一起，然后在系统内用超链接将我们的API联系起来。
+
+# 5, 关系(Relationships)与超链接API(Hyperlinked APIs)
+现在，用主键代表我们API之间的关系。在这部分教程，我们会用超链接改善API之间的关系。
+## 为我们的API根创建一个端点
+现在，我们已经为`'snippets'`和`'users'`设置了端点，但是我们没有为我们的API设置单独的入口点。因此，我们会一个基于方法的常规视图和`@api_view`装饰器来创建一个入口点。在你的`snippets/views.py`中添加：
+```
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'users': reverse('user-list', request=request, format=format),
+        'snippets': reverse('snippet-list', request=request, format=format)
+    })
+```
+我们会注意到两件事：第一，我们用了REST框架的`reverse`方法为了返回高质量的URL；第二，URL格式是方便的名字标识符，我们会在之后会在`snippets/urls.py`中声明。
+
+## 创建一个高亮的snippets端点
+另一件明显的事就是，我们的API缺乏代码高亮端点。 和我们所有的API端点不一样，我们不想用JSON，而只是想用HTML显示。REST框架提供两种HTML渲染样式，一种是用模板渲染处理HTML，另一种是用预渲染HTML。第二种是我们想要用的方式。 在创建代码时，我们需要考虑的是，高亮视图在我们使用的普通视图中是不存在的。我们不会返回一个对象实例，而是对象实例的一个属性。 我们会是使用基类代表实例，并创建我们自己的`.get()`方法，而不是用普通的视图。在你的`snippets/views.py`添加：
+```
+from rest_framework import renderers
+from rest_framework.response import Response
+
+class SnippetHighlight(generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    renderer_classes = (renderers.StaticHTMLRenderer,)
+
+    def get(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
+```
+通常，我们需要添加新的视图到我们的URL配置。然后，在`snippest/urls.py`中添加一个链接：
+```
+url(r'^$', views.api_root),
+```
+然后，为高亮snippet添加一个url样式：
+```
+url(r'^snippets/(?P<pk>[0-9]+)/highlight/$', views.SnippetHighlight.as_view()),
+```
+## 为我们的API添加超链接
+处理好实体之间的关系是Web API设计中极具挑战性的方面之一。代表一种关系可以有很多种方式：
+- 使用主键。
+- 在实体之间使用超链接。
+- 在相关的实体上使用独一无二的slug。
+- 使用相关的实体的默认字符串。
+- 在父表述使用嵌套的实体。
+- 一些自定义的表述。
+REST框架支持以上所有方式，都能适应正向或者反向关系，或者就行使用一般的外键一样使用自定义的管理方式。
+这种情况下，我们想要在实体之间使用超链接方式。为了达到目的，我们需要修改我们的序列`(serializers)`，以拓展`HyperlinkedModelSerializer`，不是使用已经存在的`ModelSerializer`。
+以下是`HyperlinkedModelSerializer`不同于`ModelSerializer`的地方：
+- `HyperlinkedModelSerializer`默认不包括pk字段。
+- 它只包括一个url字段，使用`HyperlinkedIndentityField`。
+- 关系使用`HyperlinkedRelatedField`，而不是`PrimaryKeyRelatedField`。 我们能使用超链接快速重写现存的序列。在`snippets/serializers.py`中添加：
+```
+class SnippetSerializer(serializers.HyperlinkedModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
+
+    class Meta:
+        model = Snippet
+        fields = ('url', 'id', 'highlight', 'owner',
+                  'title', 'code', 'linenos', 'language', 'style')
+
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    snippets = serializers.HyperlinkedRelatedField(many=True, view_name='snippet-detail', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('url', 'id', 'username', 'snippets')
+```
+注意，我们已经添加了一个新字段`highlight`。这个字段类型是和url一样的，只是它指向`snippet-highlighturl`模式，而不是`snippet-detailurl`模式。 因为我们已经包含了格式后缀的URL，如`.json`，所以我们也需要在highlight字段指明，任何格式后缀超链接应该用`.html`后缀。
+
+## 确保我们的URL模式是有名字的
+如果我们想要超链接的API，那么我们要保证我们给URL起了名字。让我们看看我们需要命名哪个链接。
+- 我们API根指向`user-list`和`snippet-list`。
+- 我们的`snippet`序列包括一个指向`snippet-highlight`的字段。
+- 我们的用户血烈包括一个指向`snippet-detail`的字段。
+- 我们的snippet和用户序列包括url字段，这个字段默认指向`'{model_name}-detail'`，这种情况下，它是`snippet-detail`和`user-detail`。 在将那些名字加入我们的URL配置`(URLconf)`后，我们的`snippets/urls.py`应该是下面的样子：
+```
+from django.conf.urls import url, include
+from rest_framework.urlpatterns import format_suffix_patterns
+from snippets import views
+
+# API endpoints
+urlpatterns = format_suffix_patterns([
+    url(r'^$', views.api_root),
+    url(r'^snippets/$',
+        views.SnippetList.as_view(),
+        name='snippet-list'),
+    url(r'^snippets/(?P<pk>[0-9]+)/$',
+        views.SnippetDetail.as_view(),
+        name='snippet-detail'),
+    url(r'^snippets/(?P<pk>[0-9]+)/highlight/$',
+        views.SnippetHighlight.as_view(),
+        name='snippet-highlight'),
+    url(r'^users/$',
+        views.UserList.as_view(),
+        name='user-list'),
+    url(r'^users/(?P<pk>[0-9]+)/$',
+        views.UserDetail.as_view(),
+        name='user-detail')
+])
+```
+
+## 添加分页
+用户和snippet的列表视图会返回很多实例，所以我们想要给这些结果分页，分页后允许API客户端访问每个单页。 我们可以用分页改变默认的列表风格，只要稍微修改`tutorial/settings.py`文件。添加下面设置：
+```
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
+```
+注意：REST框架的分页设置(settings)是一个单独的字典，叫'REST_FRAMEWORK'，它可以帮我们区分项目中的其他配置。 如果我们需要，我们可以自定义分页样式，但是现在我们只是用默认的。
+
+## 浏览API
+如果我们打开浏览器访问API，那么你会发现你可以通过下面的链接使用API。 你也可以看见snippet实例的高亮(highlight)链接，这些链接会返回高亮HTML代码。 在本教程的第六部分，我们会用`ViewSets`和`Routers`来减少我们API的代码量。
