@@ -919,3 +919,103 @@ REST_FRAMEWORK = {
 
 ## 浏览API
 如果我们打开浏览器访问API，那么你会发现你可以通过下面的链接使用API。 你也可以看见snippet实例的高亮(highlight)链接，这些链接会返回高亮HTML代码。 在本教程的第六部分，我们会用`ViewSets`和`Routers`来减少我们API的代码量。
+
+# 视图集(ViewSets)和路由(Routers)
+REST框架包括对`ViewSets`的简短描述，这可以让开发者把精力集中在构建状态和交互的API模型，而且它可以基于一般规范自动构建URL。 `ViewSet`类几乎和`View`类一样，除了他们提供像`read`或`update`的操作，而不是像`get`和`put`的方法。 目前，一个`ViewSet`类只绑定一个方法的集合，当它初始化一个视图的集合时，一般使用为你处理复杂的URL定义的`Router`类。
+## 使用视图集(ViewSets)重构
+让我们来用视图集重写当前视图。 首先，我们要把我们的`UserList`和`UserDetail`视图重写成单个`UserViewSet`。我们可以`UserViewSet`代替`UserList`和`UserDetail`。
+```
+from rest_framework import viewsets
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+```
+这里我们使用`ReadOnlyModelViewSet`类自动提供默认的'只读'操作。党我们使用常规视图的时候，我们仍然需要设置准确设置`queryset`和`serializer_class`属性，但是我们不在需要为两个分开的类提供同样的信息。 接下来，我们将用`SnippetHighlight`视图类来代替`SnippetList`和`SnippetDetail`。我们可以用一个类代替之前的三个类。
+```
+from rest_framework.decorators import detail_route
+from rest_framework.response import Response
+
+class SnippetViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
+
+    Additionally we also provide an extra `highlight` action.
+    """
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsOwnerOrReadOnly,)
+
+    @detail_route(renderer_classes=[renderers.StaticHTMLRenderer])
+    def highlight(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+```
+这次我们使用`ModelViewSet`类是为了获得完整的默认读写操作的集合。 注意：我们也用了`@detail_route`装饰器来创建自定义动作，命名为`highlight`。这个装饰器用于添加任何自定义的端点，这些端点不符合标准的`create/update/delete`方式。 使用`@detail_route`装饰器的自定义动作会响应GET请求。如果我们让动作响应POST请求，我们可以使用`methods`参数。 自定义动作的URL在默认情况下是依赖于方法本身。如果你想改变url本来创建的方式，你可以将`url_path`包含在装饰器关键参数中。
+## 明确绑定视图集到URL
+我们定义`URLConf`的时候，处理方法只绑定了动作。为了看看发生了什么，我们必须从我们的视图集`(ViewSets)`创建一个视图集合。 在`urls.py`文件中，我们将`ViewSet`类绑定到具体视图的集合。
+```
+from snippets.views import SnippetViewSet, UserViewSet, api_root
+from rest_framework import renderers
+
+snippet_list = SnippetViewSet.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+snippet_detail = SnippetViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy'
+})
+snippet_highlight = SnippetViewSet.as_view({
+    'get': 'highlight'
+}, renderer_classes=[renderers.StaticHTMLRenderer])
+user_list = UserViewSet.as_view({
+    'get': 'list'
+})
+user_detail = UserViewSet.as_view({
+    'get': 'retrieve'
+})
+```
+注意我们如何通过绑定`http`方法到每个视图需要的动作来从`ViewSet`类创建多视图。 既然我们已经绑定了我们的资源和具体视图，我们就可以和以前一样将我们的视图注册到URL配置中。
+```
+urlpatterns = format_suffix_patterns([
+    url(r'^$', api_root),
+    url(r'^snippets/$', snippet_list, name='snippet-list'),
+    url(r'^snippets/(?P<pk>[0-9]+)/$', snippet_detail, name='snippet-detail'),
+    url(r'^snippets/(?P<pk>[0-9]+)/highlight/$', snippet_highlight, name='snippet-highlight'),
+    url(r'^users/$', user_list, name='user-list'),
+    url(r'^users/(?P<pk>[0-9]+)/$', user_detail, name='user-detail')
+])
+```
+## 使用路由
+因为我们使用`ViewSet`类而不是View类，所以实际上我们不需要自己设计URL配置。按惯例，使用`Router`类就可以自动将资源与视图`(views)`、链接`(urls)`联系起来。我们需要做的只是用一个路由注册合适的视图集合。现在，我们把剩下的做完。 我们重写了`urls.py`文件。
+```
+from django.conf.urls import url, include
+from rest_framework.routers import DefaultRouter
+from snippets import views
+
+# Create a router and register our viewsets with it.
+router = DefaultRouter()
+router.register(r'snippets', views.SnippetViewSet)
+router.register(r'users', views.UserViewSet)
+
+# The API URLs are now determined automatically by the router.
+urlpatterns = [
+    url(r'^', include(router.urls))
+]
+```
+用路由注册视图和提供一个`urlpattern`是相似的，包括两个参数--视图的URL前缀和视图本身。 我们使用的默认路由`(DefaultRouter)`类会自动为我们创建API根视图，所以我们就可以从我们的`views`模块删除`api_root`方法。
+## views和viewsets的比较
+使用视图集(viewsets)真的很有用。它保证URL规范存在你的API中，让你写最少的代码，允许你把注意力集中在你的API提供的交互和表现上而不需要特定的URL配置。 这并不意味着这样做总是正确的。在使用基于类的视图代替基于函数的视图时，我们总会发现`views`与`viewsets`有相似的地方。使用视图集`(viewsets)`没有比你自己的视图更清晰。
+## 回顾
+难以置信，用这么少的代码，我们已经完成了一个Web API，它是完全可浏览的，拥有完整的授权`(authentication)`、每个对象权限`(per-object permissions)`和多重渲染格式`(multiple renderer formats)`。 我们已经经历了设计过程的每一步，看到了如果我们只是使用常规的Django视图自定义任何东西。
