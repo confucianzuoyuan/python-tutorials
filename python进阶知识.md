@@ -270,3 +270,55 @@ class Interpreter:
 ```
 显然，它会输出 12。
 尽管我们的解释器功能十分受限，但这个过程几乎和真正的 Python 解释器处理加法是一样的。这里，我们还有几点要注意。
+
+# 小整数池
+
+在 64 位平台上，int 类型是 64 位整数 (sys.maxint)，这显然能应对绝⼤多数情况。整数是虚拟机特殊照顾对象:
+- 从堆上按需申请名为 PyIntBlock 的缓存区域存储整数对象。
+- 使⽤用固定数组缓存 [-5, 257) 之间的⼩数字，只需计算下标就能获得指针。
+- PyIntBlock 内存不会返还给操作系统，直⾄至进程结束。
+看看 "⼩数字" 和 "⼤数字" 的区别:
+```python
+>>> a = 15
+>>> b = 15
+
+>>> a is b
+True
+
+>>> sys.getrefcount(a)
+47
+
+>>> a = 257
+>>> b = 257
+
+>>> a is b
+False
+
+>>> sys.getrefcount(a)
+2
+```
+因`PyIntBlock`内存只复⽤不回收，同时持有⼤量整数对象将导致内存暴涨，且不会在这些对象被回收后释放内存，造成事实上的内存泄露。
+
+# 上下文
+上下⽂管理协议`(Context Management Protocol)`为代码块提供了包含初始化和清理操作的安全上下⽂环境。即便代码块发⽣异常，清理操作也会被执⾏。
+- __enter__: 初始化环境，返回上下文对象。
+- __exit__: 执行清理操作。返回True时，将阻止异常向外传递。
+
+```python
+>>> class MyContext(object):
+...     def __init__(self, *args):
+...         self._data = args
+...     def __enter__(self):
+...         print("__enter__")
+...         return self._data
+...     def __exit__(self, exc_type, exc_value, traceback):
+...         if exc_type: print("Exception: ", exc_value)
+...         print("__exit__")
+...         return True
+
+>>> with MyContext(1, 2, 3) as data:
+...     print(data)
+
+>>> with MyContext(1, 2, 3):
+...     raise Exception("data error!")
+```
