@@ -202,3 +202,71 @@ Python 实现了栈式虚拟机 (Stack-Based VM) 架构，通过与机器⽆关�
 >>> import dis
 >>> dis.dis(foo.func_code)    
 ```
+
+# 微型解释器
+
+为了让说明更具体，让我们从一个非常小的解释器开始。它只能计算两个数的和，只能理解三个指令。它执行的所有代码只是这三个指令的不同组合。下面就是这三个指令：
+- LOAD_VALUE
+- ADD_TWO_VALUES
+- PRINT_ANSWER
+
+我们不关心词法、语法和编译，所以我们也不在乎这些指令集是如何产生的。你可以想象，当你写下 7 + 5，然后一个编译器为你生成那三个指令的组合。如果你有一个合适的编译器，你甚至可以用 Lisp 的语法来写，只要它能生成相同的指令。
+假设
+```
+7 + 5
+```
+生成这样的指令集：
+```python
+what_to_execute = {
+    "instructions": [("LOAD_VALUE", 0),  # the first number
+                     ("LOAD_VALUE", 1),  # the second number
+                     ("ADD_TWO_VALUES", None),
+                     ("PRINT_ANSWER", None)],
+    "numbers": [7, 5] }
+```
+Python 解释器是一个栈机器（stack machine），所以它必须通过操作栈来完成这个加法（见下图）。解释器先执行第一条指令，LOAD_VALUE，把第一个数压到栈中。接着它把第二个数也压到栈中。然后，第三条指令，ADD_TWO_VALUES，先把两个数从栈中弹出，加起来，再把结果压入栈中。最后一步，把结果弹出并输出。
+![微型虚拟机](http://jbcdn2.b0.upaiyun.com/2016/09/d4ab3c3b1c2df4a34ffb60fc2f32485d.png)
+LOAD_VALUE这条指令告诉解释器把一个数压入栈中，但指令本身并没有指明这个数是多少。指令需要一个额外的信息告诉解释器去哪里找到这个数。所以我们的指令集有两个部分：指令本身和一个常量列表。（在 Python 中，字节码就是我们所称的“指令”，而解释器“执行”的是代码对象。）
+为什么不把数字直接嵌入指令之中？想象一下，如果我们加的不是数字，而是字符串。我们可不想把字符串这样的东西加到指令中，因为它可以有任意的长度。另外，我们这种设计也意味着我们只需要对象的一份拷贝，比如这个加法 7 + 7, 现在常量表 "numbers"只需包含一个[7]。
+你可能会想为什么会需要除了ADD_TWO_VALUES之外的指令。的确，对于我们两个数加法，这个例子是有点人为制作的意思。然而，这个指令却是建造更复杂程序的轮子。比如，就我们目前定义的三个指令，只要给出正确的指令组合，我们可以做三个数的加法，或者任意个数的加法。同时，栈提供了一个清晰的方法去跟踪解释器的状态，这为我们增长的复杂性提供了支持。
+现在让我们来完成我们的解释器。解释器对象需要一个栈，它可以用一个列表来表示。它还需要一个方法来描述怎样执行每条指令。比如，LOAD_VALUE会把一个值压入栈中。
+```python
+class Interpreter:
+    def __init__(self):
+        self.stack = []
+ 
+    def LOAD_VALUE(self, number):
+        self.stack.append(number)
+ 
+    def PRINT_ANSWER(self):
+        answer = self.stack.pop()
+        print(answer)
+ 
+    def ADD_TWO_VALUES(self):
+        first_num = self.stack.pop()
+        second_num = self.stack.pop()
+        total = first_num + second_num
+        self.stack.append(total)
+```
+这三个方法完成了解释器所理解的三条指令。但解释器还需要一样东西：一个能把所有东西结合在一起并执行的方法。这个方法就叫做`run_code`，它把我们前面定义的字典结构`what-to-execute`作为参数，循环执行里面的每条指令，如果指令有参数就处理参数，然后调用解释器对象中相应的方法。
+```python
+    def run_code(self, what_to_execute):
+        instructions = what_to_execute["instructions"]
+        numbers = what_to_execute["numbers"]
+        for each_step in instructions:
+            instruction, argument = each_step
+            if instruction == "LOAD_VALUE":
+                number = numbers[argument]
+                self.LOAD_VALUE(number)
+            elif instruction == "ADD_TWO_VALUES":
+                self.ADD_TWO_VALUES()
+            elif instruction == "PRINT_ANSWER":
+                self.PRINT_ANSWER()
+```
+为了测试，我们创建一个解释器对象，然后用前面定义的`7 + 5`的指令集来调用`run_code`。
+```python
+    interpreter = Interpreter()
+    interpreter.run_code(what_to_execute)
+```
+显然，它会输出 12。
+尽管我们的解释器功能十分受限，但这个过程几乎和真正的 Python 解释器处理加法是一样的。这里，我们还有几点要注意。
