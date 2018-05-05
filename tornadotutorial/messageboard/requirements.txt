@@ -6,4 +6,5 @@ MySQL-python==1.2.5
 singledispatch==3.4.0.3
 six==1.11.0
 tornado==4.3
+Tornado-MySQL==0.5.1
 torndb==0.3
