@@ -32,3 +32,75 @@
 [I 180505 11:17:32 web:1946] 200 POST /api/submit (::1) 6.84ms
 [I 180505 11:21:03 web:1946] 200 GET / (::1) 10.56ms
 [I 180505 11:21:03 web:1946] 200 GET / (::1) 1.04ms
+[I 180505 15:12:58 web:1946] 200 GET / (127.0.0.1) 15.15ms
+[E 180505 15:13:07 MessageBoard:31] (1054, u"Unknown column 'hahah' in 'field list'")
+[I 180505 15:13:07 web:1946] 200 POST /api/submit (127.0.0.1) 10.39ms
+[E 180505 15:13:22 MessageBoard:31] (1054, u"Unknown column 'hahah' in 'field list'")
+[I 180505 15:13:22 web:1946] 200 POST /api/submit (127.0.0.1) 4.87ms
+[I 180505 15:17:11 web:1946] 200 GET / (127.0.0.1) 6.35ms
+[I 180505 15:17:16 web:1946] 200 POST /api/submit (127.0.0.1) 3.11ms
+[I 180505 15:21:10 web:1946] 200 GET / (127.0.0.1) 6.98ms
+[E 180505 15:21:16 MessageBoard:32] Expected bytes, unicode, or None; got <type 'dict'>
+[E 180505 15:21:16 web:1524] Uncaught exception POST /api/submit (127.0.0.1)
+    HTTPServerRequest(protocol='http', host='localhost:8888', method='POST', uri='/api/submit', version='HTTP/1.1', remote_ip='127.0.0.1', headers={'Origin': 'http://localhost:8888', 'Referer': 'http://localhost:8888/', 'Content-Length': '84', 'Accept-Language': 'zh-CN,zh;q=0.9', 'Accept-Encoding': 'gzip, deflate, br', 'X-Xsrftoken': '2|82f25a9c|b817ea5ba69d4784773ec756bc9649b2|1525488514', 'Cache-Control': 'no-cache', 'Accept': 'application/json, text/javascript, */*; q=0.01', 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36', 'Host': 'localhost:8888', 'X-Requested-With': 'XMLHttpRequest', 'Pragma': 'no-cache', 'Cookie': '_ga=GA1.1.1030950543.1523538245; _xsrf=2|82f25a9c|b817ea5ba69d4784773ec756bc9649b2|1525488514', 'X-Lantern-Version': '4.5.9', 'Content-Type': 'application/json', 'Proxy-Connection': 'keep-alive'})
+    Traceback (most recent call last):
+      File "/Users/yuanzuo/py2/lib/python2.7/site-packages/tornado/web.py", line 1445, in _execute
+        result = yield result
+      File "/Users/yuanzuo/py2/lib/python2.7/site-packages/tornado/gen.py", line 1008, in run
+        value = future.result()
+      File "/Users/yuanzuo/py2/lib/python2.7/site-packages/tornado/concurrent.py", line 232, in result
+        raise_exc_info(self._exc_info)
+      File "/Users/yuanzuo/py2/lib/python2.7/site-packages/tornado/gen.py", line 1017, in run
+        yielded = self.gen.send(value)
+      File "/Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py", line 33, in post
+        raise gen.Return(json_decode(dict(errcode=500, errmsg="留言失败")))
+      File "/Users/yuanzuo/py2/lib/python2.7/site-packages/tornado/escape.py", line 93, in json_decode
+        return json.loads(to_basestring(value))
+      File "/Users/yuanzuo/py2/lib/python2.7/site-packages/tornado/escape.py", line 251, in to_basestring
+        "Expected bytes, unicode, or None; got %r" % type(value)
+    TypeError: Expected bytes, unicode, or None; got <type 'dict'>
+[E 180505 15:21:16 web:1946] 500 POST /api/submit (127.0.0.1) 10.47ms
+[I 180505 15:21:40 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:21:48 web:1946] 200 GET / (127.0.0.1) 7.25ms
+[E 180505 15:21:53 MessageBoard:32] {'errcode': 200, 'errmsg': '\xe7\x95\x99\xe8\xa8\x80\xe6\x88\x90\xe5\x8a\x9f'}
+[I 180505 15:21:53 web:1946] 200 POST /api/submit (127.0.0.1) 5.61ms
+[I 180505 15:26:41 web:1946] 200 GET / (127.0.0.1) 5.03ms
+[E 180505 15:26:46 MessageBoard:33] {'errcode': 200, 'errmsg': '\xe7\x95\x99\xe8\xa8\x80\xe6\x88\x90\xe5\x8a\x9f'}
+[I 180505 15:26:46 web:1946] 200 POST /api/submit (127.0.0.1) 3.10ms
+[I 180505 15:29:28 web:1946] 200 GET / (127.0.0.1) 5.79ms
+[E 180505 15:29:32 MessageBoard:34] (1054, u"Unknown column 'asdf' in 'field list'")
+[I 180505 15:29:32 web:1946] 200 POST /api/submit (127.0.0.1) 4.85ms
+[E 180505 15:30:22 MessageBoard:34] {'errcode': 200, 'errmsg': '\xe7\x95\x99\xe8\xa8\x80\xe6\x88\x90\xe5\x8a\x9f'}
+[I 180505 15:30:22 web:1946] 200 POST /api/submit (127.0.0.1) 4.25ms
+[I 180505 15:32:49 web:1946] 200 GET / (127.0.0.1) 7.79ms
+[E 180505 15:32:55 MessageBoard:35] {'errcode': 200, 'errmsg': '\xe7\x95\x99\xe8\xa8\x80\xe6\x88\x90\xe5\x8a\x9f'}
+[I 180505 15:32:55 web:1946] 200 POST /api/submit (127.0.0.1) 3.13ms
+[I 180505 15:42:46 web:1946] 200 GET / (127.0.0.1) 14.45ms
+[E 180505 15:42:51 MessageBoard:30] {'errcode': 200, 'errmsg': '\xe7\x95\x99\xe8\xa8\x80\xe6\x88\x90\xe5\x8a\x9f'}
+[I 180505 15:42:51 web:1946] 200 POST /api/submit (127.0.0.1) 3.35ms
+[I 180505 15:43:18 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:43:27 web:1946] 200 GET / (127.0.0.1) 5.29ms
+[E 180505 15:43:31 MessageBoard:30] {'errcode': 200, 'errmsg': '\xe7\x95\x99\xe8\xa8\x80\xe6\x88\x90\xe5\x8a\x9f'}
+[I 180505 15:43:31 web:1946] 200 POST /api/submit (127.0.0.1) 3.43ms
+[I 180505 15:44:38 web:1946] 200 GET / (127.0.0.1) 4.98ms
+[E 180505 15:44:42 MessageBoard:29] {'errcode': 200, 'errmsg': '\xe7\x95\x99\xe8\xa8\x80\xe6\x88\x90\xe5\x8a\x9f'}
+[I 180505 15:44:42 web:1946] 200 POST /api/submit (127.0.0.1) 3.31ms
+[I 180505 15:50:14 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:50:17 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:50:31 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:50:42 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:50:45 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:50:58 web:1946] 200 GET / (127.0.0.1) 5.13ms
+[I 180505 15:51:03 web:1946] 200 POST /api/submit (127.0.0.1) 4.94ms
+[I 180505 15:51:40 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:51:47 web:1946] 200 GET / (127.0.0.1) 6.77ms
+[I 180505 15:51:51 web:1946] 200 POST /api/submit (127.0.0.1) 5.91ms
+[I 180505 15:52:24 autoreload:204] /Users/yuanzuo/Desktop/tutorials/tornadotutorial/messageboard/handlers/MessageBoard.py modified; restarting server
+[I 180505 15:52:36 web:1946] 200 GET / (127.0.0.1) 7.91ms
+[I 180505 15:52:44 web:1946] 200 POST /api/submit (127.0.0.1) 5.53ms
+[I 180505 15:52:46 web:1946] 200 POST /api/submit (127.0.0.1) 5.96ms
+[I 180505 15:54:49 web:1946] 200 GET / (127.0.0.1) 8.35ms
+[I 180505 15:54:54 web:1946] 200 POST /api/submit (127.0.0.1) 7.41ms
+[I 180505 15:56:24 web:1946] 200 GET / (127.0.0.1) 6.57ms
+[E 180505 15:56:33 MessageBoard:32] {'errcode': 200, 'errmsg': '\xe7\x95\x99\xe8\xa8\x80\xe6\x88\x90\xe5\x8a\x9f'}
+[I 180505 15:56:33 web:1946] 200 POST /api/submit (127.0.0.1) 12.66ms
