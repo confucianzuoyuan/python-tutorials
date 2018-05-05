@@ -159,7 +159,7 @@
             contentType: "application/json",
             dataType: "json",
             headers:{
-                "X-XSRFTOKEN":getCookie("_xsrf"),
+                "X-XSRFTOKEN": getCookie("_xsrf"),
             },
             success: function (data) {
                 if ("200" == data.errcode) {
