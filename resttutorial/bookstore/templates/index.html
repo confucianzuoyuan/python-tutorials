@@ -1,0 +1,86 @@
+<link href="https://cdn.bootcss.com/bulma/0.7.1/css/bulma.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<div class="field">
+  <label class="label">Name</label>
+  <div class="control">
+    <input class="input" type="text" placeholder="Text input" id="name">
+  </div>
+</div>
+
+<div class="field">
+  <label class="label">Password</label>
+  <div class="control has-icons-left has-icons-right">
+    <input class="input is-success" type="text" placeholder="Text input" value="bulma" id="password">
+    <span class="icon is-small is-left">
+      <i class="fas fa-user"></i>
+    </span>
+    <span class="icon is-small is-right">
+      <i class="fas fa-check"></i>
+    </span>
+  </div>
+</div>
+
+<div class="field">
+  <label class="label">Email</label>
+  <div class="control has-icons-left has-icons-right">
+    <input class="input is-danger" type="email" placeholder="Email input" value="hello@" id="email">
+    <span class="icon is-small is-left">
+      <i class="fas fa-envelope"></i>
+    </span>
+    <span class="icon is-small is-right">
+      <i class="fas fa-exclamation-triangle"></i>
+    </span>
+  </div>
+</div>
+
+<div class="field">
+  <div class="control">
+    <label class="radio">
+      <input type="radio" name="是否激活" id="active">
+      Yes
+    </label>
+    <label class="radio">
+      <input type="radio" name="是否激活">
+      No
+    </label>
+  </div>
+</div>
+
+<div class="field is-grouped">
+  <div class="control">
+    <button id="submit" class="button is-link">Submit</button>
+      {%  csrf_token %}
+  </div>
+  <div class="control">
+    <button class="button is-text">Cancel</button>
+  </div>
+</div>
+<script>
+    $("#submit").click(function() {
+        var username = $("#name").val()
+        var password = $("#password").val()
+        var email = $("#email").val()
+        var is_active = $("#is_active").val()
+        var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val()
+        var params = {
+            username,
+            email,
+            password,
+            is_active,
+            csrfmiddlewaretoken,
+        }
+        {#$.ajax({#}
+        {#    url: '/users/',#}
+        {#    type: "POST",#}
+        {#    data: JSON.stringify(params),#}
+        {#    success: function (data) {#}
+        {#        console.log(data)#}
+        {#    }#}
+        {#})#}
+        $.post('/users/', params, function (data) {
+            console.log(data);
+        })
+
+    })
+
+</script>
