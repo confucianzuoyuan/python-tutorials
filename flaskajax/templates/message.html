@@ -5,7 +5,6 @@
 <head>
     <meta charset="UTF-8">
     <title></title>
-    <link rel="stylesheet" href="/static/css/style.css">
 	<style>
 		.smart-green {
 			margin-left: auto;
@@ -147,14 +146,21 @@
 			email,
 			useraddress,
 			messagetext
-		}
-        $.post('/',  params, function (data) {
-            if (data.res === 200) {
-                alert('留言成功')
-            } else {
-                alert('留言失败')
+        }
+        $.ajax({
+            url:"/",
+            type:"POST",
+            data: JSON.stringify(params),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                if (200 === data.res) {
+					alert("留言成功")
+                } else {
+					alert("留言失败")
+				}
             }
-        })
+        });
 	})
 
 </script>

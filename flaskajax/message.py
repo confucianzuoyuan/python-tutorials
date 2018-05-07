@@ -26,14 +26,12 @@ def message():
         return render_template('message.html')
     if request.method == 'POST':
         try:
-            data = request.get_data()
-            from werkzeug.urls import url_decode
-            data = url_decode(data)
+            data = request.get_json()
             print('data: ', data)
-            username = data.get('username', 0)
-            email = data.get('email', 0)
-            useraddress = data.get('useraddress', 0)
-            messagetext = data.get('messagetext', 0)
+            username = data['username']
+            email = data['email']
+            useraddress = data['useraddress']
+            messagetext = data['messagetext']
             message = Message(username=username, email=email, useraddress=useraddress, messagetext=messagetext)
             db.session.add(message)
             db.session.commit()
