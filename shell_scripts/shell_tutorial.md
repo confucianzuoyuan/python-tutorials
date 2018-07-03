@@ -267,3 +267,5 @@ if [ ! -n "$X" ]; then
   echo "You said: $X"
 fi
 ```
+
+以上是几个条件结构的例子。
