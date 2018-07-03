@@ -311,3 +311,219 @@ See you again!
 That's all folks!
 $
 ```
+
+继续学习变量。以下代码写入`var3.sh`。
+
+```sh
+#!/bin/sh
+echo "I was called with $# parameters"
+echo "My name is $0"
+echo "My first parameter is $1"
+echo "My second parameter is $2"
+echo "All parameters are $@"
+```
+
+运行结果如下：
+
+```sh
+$ /home/steve/var3.sh
+I was called with 0 parameters
+My name is /home/steve/var3.sh
+My first parameter is
+My second parameter is    
+All parameters are 
+$
+$ ./var3.sh hello world earth
+I was called with 3 parameters
+My name is ./var3.sh
+My first parameter is hello
+My second parameter is world
+All parameters are hello world earth
+```
+
+继续学习变量。以下代码写入`var4.sh`。
+
+```sh
+#!/bin/sh
+while [ "$#" -gt "0" ]
+do
+  echo "\$1 is $1"
+  shift
+done
+```
+
+This script keeps on using `shift` until `$#` is down to zero, at which point the list is empty.
+Another special variable is `$?`. This contains the exit value of the last run command. So the code:
+
+```sh
+#!/bin/sh
+/usr/local/bin/my-command
+if [ "$?" -ne "0" ]; then
+  echo "Sorry, we had a problem there!"
+fi
+```
+
+当进程退出时的代码为`0`时，就没有问题。
+
+```sh
+#!/bin/sh
+old_IFS="$IFS"
+IFS=:
+echo "Please input some data separated by colons ..."
+read x y z
+IFS=$old_IFS
+echo "x is $x y is $y z is $z"
+```
+
+写入`var5.sh`。运行如下：
+```sh
+$ ./ifs.sh
+Please input some data separated by colons ...
+hello:how are you:today
+x is hello y is how are you z is today
+```
+
+```sh
+$ ./ifs.sh
+Please input some data separated by colons ...
+hello:how are you:today:my:friend
+x is hello y is how are you z is today:my:friend
+```
+
+使用默认变量。
+
+```sh
+#!/bin/sh
+echo -en "What is your name [ `whoami` ] "
+read myname
+if [ -z "$myname" ]; then
+  myname=`whoami`
+fi
+echo "Your name is : $myname"
+```
+
+函数的用法。
+
+```sh
+#!/bin/sh
+# A simple script with a function...
+
+add_a_user()
+{
+  USER=$1
+  PASSWORD=$2
+  shift; shift;
+  # Having shifted twice, the rest is now comments ...
+  COMMENTS=$@
+  echo "Adding user $USER ..."
+  echo useradd -c "$COMMENTS" $USER
+  echo passwd $USER $PASSWORD
+  echo "Added user $USER ($COMMENTS) with pass $PASSWORD"
+}
+
+###
+# Main body of script starts here
+###
+echo "Start of script..."
+add_a_user bob letmein Bob Holness the presenter
+add_a_user fred badpassword Fred Durst the singer
+add_a_user bilko worsepassword Sgt. Bilko the role model
+echo "End of script..."
+```
+
+斐波那契数列的shell实现，使用递归。
+
+```sh
+#!/bin/sh
+
+factorial()
+{
+  if [ "$1" -gt "1" ]; then
+    i=`expr $1 - 1`
+    j=`factorial $i`
+    k=`expr $1 \* $j`
+    echo $k
+  else
+    echo 1
+  fi
+}
+
+
+while :
+do
+  echo "Enter a number:"
+  read x
+  factorial $x
+done 
+```
+
+模块化编程。以下代码写入`common.lib`。
+
+```sh
+# common.lib
+# Note no #!/bin/sh as this should not spawn 
+# an extra shell. It's not the end of the world 
+# to have one, but clearer not to.
+#
+STD_MSG="About to rename some files..."
+
+rename()
+{
+  # expects to be called as: rename .txt .bak 
+  FROM=$1
+  TO=$2
+
+  for i in *$FROM
+  do
+    j=`basename $i $FROM`
+    mv $i ${j}$TO
+  done
+}
+```
+
+以下代码写入`function2.sh`。
+
+```sh
+#!/bin/sh
+# function2.sh
+. ./common.lib
+echo $STD_MSG
+rename .txt .bak
+```
+
+返回码。
+
+```sh
+#!/bin/sh
+
+adduser()
+{
+  USER=$1
+  PASSWORD=$2
+  shift ; shift
+  COMMENTS=$@
+  useradd -c "${COMMENTS}" $USER
+  if [ "$?" -ne "0" ]; then
+    echo "Useradd failed"
+    return 1
+  fi
+  passwd $USER $PASSWORD
+  if [ "$?" -ne "0" ]; then
+    echo "Setting password failed"
+    return 2
+  fi
+  echo "Added user $USER ($COMMENTS) with pass $PASSWORD"
+}
+
+## Main script starts here
+
+adduser bob letmein Bob Holness from Blockbusters
+ADDUSER_RETURN_CODE=$?
+if [ "$ADDUSER_RETURN_CODE" -eq "1" ]; then
+  echo "Something went wrong with useradd"
+elif [ "$ADDUSER_RETURN_CODE" -eq "2" ]; then 
+   echo "Something went wrong with passwd"
+else
+  echo "Bob Holness added to the system."
+fi
+```
