@@ -59,7 +59,11 @@ MY_MESSAGE="Hello World"
 echo $MY_MESSAGE
 ```
 
-以上是`var.sh`的代码。用来学习变量的使用，或者也可以认为是环境变量。
+以上是`var.sh`的代码。用来学习变量的使用。环境变量使用以下代码实现：
+
+```sh
+$ export name=zuoyuan
+```
 
 ```sh
 #!/bin/sh
