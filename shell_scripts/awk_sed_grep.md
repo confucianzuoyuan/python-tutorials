@@ -175,10 +175,10 @@ Linux sed命令是利用script来处理文本文件。
 
 ### 插入操作
 
-在test.log文件的第4行后插入一行，内容为nmask
+在test.log文件的第3行后插入一行，内容为nmask
 
 ```sh
-sed -e 4a\nmask test.log
+sed -e 3a\nmask test.log
 ```
 
 ### 删除操作
