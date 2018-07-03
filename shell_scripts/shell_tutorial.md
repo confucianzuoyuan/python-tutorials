@@ -269,3 +269,45 @@ fi
 ```
 
 以上是几个条件结构的例子。
+
+继续举几个例子。
+
+```sh
+#!/bin/sh
+
+echo "Please talk to me ..."
+while :
+do
+  read INPUT_STRING
+  case $INPUT_STRING in
+	hello)
+		echo "Hello yourself!"
+		;;
+	bye)
+		echo "See you again!"
+		break
+		;;
+	*)
+		echo "Sorry, I don't understand"
+		;;
+  esac
+done
+echo 
+echo "That's all folks!"
+```
+
+运行后有以下结果。
+
+```sh
+$ ./talk.sh
+Please talk to me ...
+hello
+Hello yourself!
+What do you think of politics?
+Sorry, I don't understand
+bye
+See you again!
+
+That's all folks!
+$
+```
