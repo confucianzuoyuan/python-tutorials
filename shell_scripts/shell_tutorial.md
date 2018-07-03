@@ -52,3 +52,20 @@ $ echo Hello World
 Hello World
 $
 ```
+
+```sh
+#!/bin/sh
+MY_MESSAGE="Hello World"
+echo $MY_MESSAGE
+```
+
+以上是`var.sh`的代码。用来学习变量的使用，或者也可以认为是环境变量。
+
+```sh
+#!/bin/sh
+echo What is your name?
+read MY_NAME
+echo "Hello $MY_NAME - hope you're well."
+```
+
+以上是`var2.sh`的代码。
