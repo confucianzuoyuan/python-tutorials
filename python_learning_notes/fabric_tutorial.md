@@ -184,3 +184,66 @@ def deploy():
         run("git pull")
         run("touch app.wsgi")
 ```
+
+再举一个例子。
+
+```py
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from datetime import datetime
+from fabric.api import *
+
+# 登录用户和主机名：
+env.user = 'root'
+env.hosts = ['www.example.com'] # 如果有多个主机，fabric会自动依次部署
+
+def pack():
+    ' 定义一个pack任务 '
+    # 打一个tar包：
+    tar_files = ['*.py', 'static/*', 'templates/*', 'favicon.ico']
+    local('rm -f example.tar.gz')
+    local('tar -czvf example.tar.gz --exclude=\'*.tar.gz\' --exclude=\'fabfile.py\' %s' % ' '.join(tar_files))
+
+def deploy():
+    ' 定义一个部署任务 '
+    # 远程服务器的临时文件：
+    remote_tmp_tar = '/tmp/example.tar.gz'
+    tag = datetime.now().strftime('%y.%m.%d_%H.%M.%S')
+    run('rm -f %s' % remote_tmp_tar)
+    # 上传tar文件至远程服务器：
+    put('shici.tar.gz', remote_tmp_tar)
+    # 解压：
+    remote_dist_dir = '/srv/www.example.com@%s' % tag
+    remote_dist_link = '/srv/www.example.com'
+    run('mkdir %s' % remote_dist_dir)
+    with cd(remote_dist_dir):
+        run('tar -xzvf %s' % remote_tmp_tar)
+    # 设定新目录的www-data权限:
+    run('chown -R www-data:www-data %s' % remote_dist_dir)
+    # 删除旧的软链接：
+    run('rm -f %s' % remote_dist_link)
+    # 创建新的软链接指向新部署的目录：
+    run('ln -s %s %s' % (remote_dist_dir, remote_dist_link))
+    run('chown -R www-data:www-data %s' % remote_dist_link)
+    # 重启fastcgi：
+    fcgi = '/etc/init.d/py-fastcgi'
+    with settings(warn_only=True):
+        run('%s stop' % fcgi)
+    run('%s start' % fcgi)
+```
+
+然后执行
+
+```
+$ fab pack
+$ fab deploy
+```
+
+`Fabric`提供几个简单的`API`来完成所有的部署，最常用的是`local()`和`run()`，分别在本地和远程执行命令，`put()`可以把本地文件上传到远程，当需要在远程指定当前目录时，只需用`with cd('/path/to/dir/'):`即可。
+
+默认情况下，当命令执行失败时，`Fabric`会停止执行后续命令。有时，我们允许忽略失败的命令继续执行，比如`run('rm /tmp/abc')`在文件不存在的时候有可能失败，这时可以用`with settings(warn_only=True):`执行命令，这样`Fabric`只会打出警告信息而不会中断执行。
+
+`Fabric`是如何在远程执行命令的呢？其实`Fabric`所有操作都是基于`SSH`执行的，必要时它会提示输入口令，所以非常安全。更好的办法是在指定的部署服务器上用证书配置无密码的`ssh`连接。
+
+如果是基于团队开发，可以让`Fabric`利用版本库自动检出代码，自动执行测试、打包、部署的任务。由于`Fabric`运行的命令都是基本的`Linux`命令，所以根本不需要用`Fabric`本身来扩展，会敲`Linux`命令就能用`Fabric`部署。
