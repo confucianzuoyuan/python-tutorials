@@ -80,6 +80,7 @@ explain select * from s_books;
 - [MySQL慢查询&分析SQL执行效率浅谈](https://www.jianshu.com/p/43091bfa8aa7)
 - [MYSQL性能优化的最佳20+条经验](https://coolshell.cn/articles/1846.html)
 - [我必须得告诉大家的 MySQL 优化原理](https://juejin.im/entry/590427815c497d005832dab9)
+- [MySQL 备份和恢复机制](https://juejin.im/entry/5a0aa2026fb9a045132a369f)
 
 # mysql建索引
 - CREATE INDEX indexName ON mytable(username(length)); 
