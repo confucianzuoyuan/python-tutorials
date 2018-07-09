@@ -75,13 +75,9 @@ explain select * from s_books;
 - 静态资源存到cdn(阿里云图片云存储，七牛云，又拍云)
 - 负载均衡
 
-![](https://www.jianshu.com/p/43091bfa8aa7)
-![](https://coolshell.cn/articles/1846.html)
-![](https://juejin.im/entry/590427815c497d005832dab9)
-
-# 分布式强一致性的解决算法
-- Paxos
-- Raft
+![MySQL慢查询&分析SQL执行效率浅谈](https://www.jianshu.com/p/43091bfa8aa7)
+![MYSQL性能优化的最佳20+条经验](https://coolshell.cn/articles/1846.html)
+![我必须得告诉大家的 MySQL 优化原理](https://juejin.im/entry/590427815c497d005832dab9)
 
 # mysql建索引
 - CREATE INDEX indexName ON mytable(username(length)); 
