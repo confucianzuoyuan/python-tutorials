@@ -527,3 +527,32 @@ else
   echo "Bob Holness added to the system."
 fi
 ```
+
+## crontab的使用
+
+在考虑向cron进程提交一个crontab文件之前，首先要做的一件事情就是设置环境变量EDITOR。cron进程根据它来确定使用哪个编辑器编辑crontab文件。9 9 %的UNIX和LINUX用户都使用vi，如果你也是这样，那么你就编辑$ HOME目录下的. profile文件，在其中加入这样一行：
+```
+EDITOR=vi; export EDITOR
+```
+然后保存并退出。不妨创建一个名为`<user>cron`的文件，其中`<user>`是用户名，例如，`davecron`。在该文件中加入如下的内容。
+```sh
+# (put your own initials here)echo the date to the console every
+# 15minutes between 6pm and 6am
+0,15,30,45 18-06 * * * /bin/echo 'date' > /dev/console
+```
+保存并退出。确信前面5个域用空格分隔。
+
+在上面的例子中，系统将每隔1 5分钟向控制台输出一次当前时间。如果系统崩溃或挂起，从最后所显示的时间就可以一眼看出系统是什么时间停止工作的。在有些系统中，用tty1来表示控制台，可以根据实际情况对上面的例子进行相应的修改。为了提交你刚刚创建的crontab文件，可以把这个新创建的文件作为`cron`命令的参数：
+
+```
+$ crontab davecron
+```
+
+现在该文件已经提交给cron进程，它将每隔15分钟运行一次。
+
+同时，新创建文件的一个副本已经被放在/var/spool/cron目录中，文件名就是用户名(即dave)。
+
+   为了列出crontab文件，可以用：
+```sh
+$ crontab -l
+```
