@@ -431,7 +431,7 @@ add_a_user bilko worsepassword Sgt. Bilko the role model
 echo "End of script..."
 ```
 
-斐波那契数列的shell实现，使用递归。
+阶乘的shell实现，使用递归。
 
 ```sh
 #!/bin/sh
