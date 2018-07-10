@@ -58,7 +58,7 @@ cat test.log | awk -v a=1 '{print $1,$1+a}'
 字符串拼接：（用””而不是+）
 
 ```sh
-cat test.txt | awk -v a=\" '{print a""$0""a}'
+cat test.log | awk -v a=\" '{print a""$0""a}'
 ```
 
 ### 逻辑判断
