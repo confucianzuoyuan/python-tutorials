@@ -1,6 +1,6 @@
 `fabric`是python很有名的一个库，用来做运维执行脚本部署程序很方便。只支持python2。
 
-不需要进虚拟环境，直接`pip install fabric`。
+不需要进虚拟环境，直接`pip install fabric==1.14.0`。
 
 新建一个文件命名为`fabfile.py`，注意必须是这个名字，不能改。
 

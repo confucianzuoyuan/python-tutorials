@@ -21,12 +21,12 @@
 
 ### 分隔符
 
-每行按空格分割列，并输出第1、4列
+每行按空格分割列，并输出第1、3列
 
 ```sh
-$ awk '{print $1,$4}' test.log
+$ awk '{print $1,$3}' test.log
 # 或者
-$ cat test.log | awk '{print $1,$4}'
+$ cat test.log | awk '{print $1,$3}'
 ```
 
 ### 自定义分隔符
@@ -58,7 +58,7 @@ cat test.log | awk -v a=1 '{print $1,$1+a}'
 字符串拼接：（用””而不是+）
 
 ```sh
-cat test.txt | awk -v a=\" '{print a""$0""a}'
+cat test.log | awk -v a=\" '{print a""$0""a}'
 ```
 
 ### 逻辑判断
