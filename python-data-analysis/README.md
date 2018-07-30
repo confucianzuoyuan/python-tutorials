@@ -37,3 +37,10 @@
 - [附录A NumPy高级应用](https://www.jianshu.com/p/3c3f7da88516)
 
 - [附录B 更多关于IPython的内容（完）](https://www.jianshu.com/p/fb6719a18cea)
+
+## 案例集
+
+- [网贷数据爬取及分析](https://juejin.im/post/5a67412af265da3e55380f6f)
+- [电商评论数据的简单分析](https://zhuanlan.zhihu.com/p/27132793)
+- [python爬虫学习:电商数据分析](https://zhuanlan.zhihu.com/p/32308828)
+- [基于Python的信用评分卡模型分析](https://zhuanlan.zhihu.com/p/35284849)
