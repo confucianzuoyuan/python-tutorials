@@ -33,5 +33,6 @@
 - `git stash pop`: 恢复工作区
 - `git rebase -i commitid`: 将commitid后面的所有commit合并成一个commit提交
 - `git rebase master`: 将master分支的commit在当前分支重放一遍。
+- `git rebase 分支名`：将`分知名`这个分支在当前分支重新播放一遍。
 - `git push --force`: 强制提交
 - `git cherry-pick commitid`: 将别的分支的commitid对应的提交剪切到当前分支。
