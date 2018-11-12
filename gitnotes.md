@@ -25,7 +25,7 @@
 - `git log --graph --pretty=oneline --abbrev-commit`: 查看漂亮的代码提交历史
 - `git push --set-upstream origin develop`: 当远程仓库github中没有develop分支时，将本地的develop分支提交到仓库里面。
 - `git branch -d develop`: 删除本地的develop分支
-- `git push -d origin develop`: 删除远程的develop分支
+- `git push --delete origin develop`: 删除远程的develop分支
 - `git push origin --delete develop`: 同上
 - `git branch -D develop`: 强行删除develop分支
 - `git stash`: 缓存工作区内容
