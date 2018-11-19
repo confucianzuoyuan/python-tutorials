@@ -3,9 +3,9 @@ import unittest
 
 class TestStringMethods(unittest.TestCase):
 
-	# setUp函数是测试前的准备工作
-	def setUp(self):
-		pass
+    # setUp函数是测试前的准备工作
+    def setUp(self):
+        pass
 
     def test_upper(self):
         self.assertEqual('foo'.upper(), 'FOO')
@@ -23,7 +23,7 @@ class TestStringMethods(unittest.TestCase):
 
     # 测试用例全部执行完以后，运行的清理工作
     def tearDown(self):
-    	pass
+        pass
 
 if __name__ == '__main__':
     unittest.main()
