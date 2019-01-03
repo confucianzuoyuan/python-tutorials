@@ -1,4 +1,5 @@
 # git基本命令
+- ubuntu安装git: `sudo apt-get install git`
 - `ssh-keygen -t rsa -C "youremail@example.com"`: 用来生成秘钥
 - `git config --global user.email "你申请github用的邮箱"`
 - `git config --global user.name "你的github用户名"`
